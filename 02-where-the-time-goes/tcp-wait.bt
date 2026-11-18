@@ -1,0 +1,19 @@
+// Step two: on which connection does the process wait?
+// Time from a send on a socket to the next data received on it.
+// Usage: bpftrace tcp-wait.bt <pid>
+kprobe:tcp_sendmsg /pid == $1/ { @sent[arg0] = nsecs; }
+
+kprobe:tcp_recvmsg /pid == $1/ { @sk[tid] = arg0; }
+
+kretprobe:tcp_recvmsg /pid == $1 && @sk[tid]/
+{
+	$sk = (struct sock *)@sk[tid];
+	if ((int32)retval > 0 && @sent[@sk[tid]]) {
+		$port = bswap($sk->__sk_common.skc_dport);
+		printf("remote port %d: waited %d ms\n", $port, (nsecs - @sent[@sk[tid]]) / 1000000);
+		delete(@sent[@sk[tid]]);
+	}
+	delete(@sk[tid]);
+}
+
+END { clear(@sent); clear(@sk); }

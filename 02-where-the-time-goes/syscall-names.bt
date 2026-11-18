@@ -1,0 +1,10 @@
+// Same as syscall-time.bt with readable names. Not shown in the article: it needs
+// BPFTRACE_MAX_PROBES=1500 (611 probes) and about 20 s to attach and detach.
+// Usage: BPFTRACE_MAX_PROBES=1500 bpftrace syscall-names.bt <pid>
+tracepoint:syscalls:sys_enter_* /pid == $1/ { @start[tid] = nsecs; }
+tracepoint:syscalls:sys_exit_* /pid == $1 && @start[tid]/
+{
+	@us[probe] = sum((nsecs - @start[tid]) / 1000);
+	delete(@start[tid]);
+}
+END { clear(@start); }

@@ -1,0 +1,5 @@
+// How many files does each program open? Counted inside the kernel, printed on Ctrl-C.
+tracepoint:syscalls:sys_enter_openat
+{
+	@opens[comm] = count();
+}

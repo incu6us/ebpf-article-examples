@@ -1,0 +1,6 @@
+// Which process opens the audit log?
+tracepoint:syscalls:sys_enter_openat
+/str(args.filename) == "/var/log/orders/audit.log"/
+{
+	printf("%s (pid %d) opened %s\n", comm, pid, str(args.filename));
+}

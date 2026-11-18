@@ -1,0 +1,45 @@
+name: ebpf-lab
+services:
+  db:
+    build: db  # postgres:18 with a private copy of the binary, see db/Dockerfile
+    environment:
+      POSTGRES_PASSWORD: lab
+      POSTGRES_DB: shop
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "shop"]
+      interval: 2s
+      retries: 20
+  llm:
+    build: .
+    command: ["/llmstub"]
+    networks:
+      default:
+        aliases: [api.llm.test]
+  orders:
+    build: .
+    command: ["/orders"]
+    environment:
+      DATABASE_URL: postgres://postgres:lab@db:5432/shop
+      LLM_URL: https://api.llm.test:8443/v1/messages
+    ports: ["${LAB_PORT:-18180}:8080"]  # LAB_PORT changes the port on the host
+    depends_on:
+      db: {condition: service_healthy}
+      llm: {condition: service_started}
+  # Privileged with the host PID namespace: sees every process of the Docker VM.
+  probe:
+    build: probe
+    privileged: true
+    pid: host
+    # bpftrace needs tracefs and debugfs, the container does not get them by default.
+    command: ["sh", "-c", "mount -t tracefs none /sys/kernel/tracing; mount -t debugfs none /sys/kernel/debug; exec sleep infinity"]
+    volumes:
+      # The article directories, so each article can run its own scripts here.
+      # Writable, because go generate puts the compiled eBPF programs next to the source.
+      - ..:/series
+      - gocache:/root/go
+      - gobuild:/root/.cache
+volumes:
+  gocache:
+  gobuild:

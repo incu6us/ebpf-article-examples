@@ -1,0 +1,22 @@
+# Runs every chapter against the lab on both CPU types.
+name: check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kernel and Docker
+        run: uname -a && docker version --format '{{.Server.Version}}'
+      - name: All chapters
+        run: ./lab/check.sh
+      - name: Container logs
+        if: failure()
+        run: docker compose -f lab/compose.yaml logs --tail 100

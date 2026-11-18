@@ -1,0 +1,19 @@
+// Not shown in the article. Measures how long the audit log stays open,
+// which is the number behind "lsof never sees it".
+tracepoint:syscalls:sys_enter_openat
+/str(args.filename) == "/var/log/orders/audit.log"/
+{
+	@want[tid] = 1;
+}
+
+tracepoint:syscalls:sys_exit_openat /@want[tid]/
+{
+	@opened[pid, args.ret] = nsecs;
+	delete(@want[tid]);
+}
+
+tracepoint:syscalls:sys_enter_close /@opened[pid, args.fd]/
+{
+	printf("open for %d us\n", (nsecs - @opened[pid, args.fd]) / 1000);
+	delete(@opened[pid, args.fd]);
+}

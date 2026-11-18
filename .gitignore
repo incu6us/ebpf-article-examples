@@ -1,0 +1,6 @@
+# Made by go generate inside the probe container.
+vmlinux.h
+*_bpfel.go
+*_bpfel.o
+# Raw output that SAVE=1 ./check.sh keeps.
+images/

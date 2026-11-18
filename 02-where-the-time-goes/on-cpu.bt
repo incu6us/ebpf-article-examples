@@ -1,0 +1,14 @@
+// How long does the process run on a CPU?
+// Sums the time from the moment a thread gets a CPU to the moment it gives it up.
+// Usage: bpftrace on-cpu.bt <pid>
+tracepoint:sched:sched_switch
+{
+	// The thread that leaves the CPU is the current one, so pid is its process.
+	if (pid == $1 && @on[tid]) {
+		@cpu_ns = sum(nsecs - @on[tid]);
+	}
+	delete(@on[tid]);
+	@on[args.next_pid] = nsecs;
+}
+
+END { clear(@on); }

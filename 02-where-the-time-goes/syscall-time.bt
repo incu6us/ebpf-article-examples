@@ -1,0 +1,14 @@
+// Step one: in which syscalls does the process spend wall clock time?
+// Keyed by syscall number, two probes only. Attaching to every
+// syscalls:sys_enter_* tracepoint needs 611 probes, over the bpftrace limit of 512.
+// Usage: bpftrace syscall-time.bt <pid>
+tracepoint:raw_syscalls:sys_enter /pid == $1/ { @start[tid] = nsecs; }
+
+tracepoint:raw_syscalls:sys_exit /pid == $1 && @start[tid]/
+{
+	@us[args.id] = sum((nsecs - @start[tid]) / 1000);
+	@calls[args.id] = count();
+	delete(@start[tid]);
+}
+
+END { clear(@start); }
