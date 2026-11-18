@@ -18,10 +18,20 @@ lab_up() {
 # (default 1) while it is attached and keeps the output in $OUT. The answer of the
 # last request (with the timings measured by the service itself) is in $RESP.
 run() {
-	dc exec -T probe sh -c "timeout -s INT 12 $1 2>&1" > "$OUT" &
-	sleep 4
+	dc exec -T probe sh -c "echo \$\$ > /tmp/run.pid; exec timeout -s INT 60 $1 2>&1" > "$OUT" &
+	# A probe needs from one to several seconds to start, more on a cold machine.
+	# Its first line ("Attaching 1 probe...") says that it is ready.
+	i=0
+	until [ -s "$OUT" ] || [ $i -ge 60 ]; do sleep 0.5; i=$((i + 1)); done
+	ready=$(date +%s)
+	sleep 1
 	n=${2:-1}
 	while [ "$n" -gt 0 ]; do curl -sf -o "$RESP" "$URL"; n=$((n - 1)); done
+	# 12 s after it is ready the probe gets Ctrl-C and prints its maps. Only this
+	# probe: the container sees every process of the host.
+	left=$((ready + 12 - $(date +%s)))
+	[ $left -gt 0 ] && sleep $left
+	dc exec -T probe sh -c 'kill -INT $(cat /tmp/run.pid)' || true
 	wait
 }
 

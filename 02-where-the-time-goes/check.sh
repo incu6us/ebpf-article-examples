@@ -19,7 +19,8 @@ expect '^@cpu_ns: [0-9]{6,7}$' "on-cpu.bt: the process is on a CPU for less than
 
 run "bpftrace /series/02-where-the-time-goes/syscall-time.bt $orders"
 keep syscall-time
-expect "^@us\\[$wait_nr\\]: 1[0-9]{6}\$" "syscall-time.bt: more than a second inside epoll_pwait"
+# The total grows with the time the probe runs, so only the lower end is checked.
+expect "^@us\\[$wait_nr\\]: [1-9][0-9]{6}\$" "syscall-time.bt: more than a second inside epoll_pwait"
 expect "^@us\\[$read_nr\\]: [0-9]{1,3}\$" "syscall-time.bt: all reads together take under 1 ms"
 expect "^@us\\[$write_nr\\]: [0-9]{1,3}\$" "syscall-time.bt: all writes together take under 1 ms"
 
