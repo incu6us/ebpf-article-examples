@@ -2,7 +2,7 @@
 # Runs the scripts of this chapter against the lab and checks their output.
 # SAVE=1 ./check.sh also keeps the raw output of every step in images/src/.
 # Syscall numbers depend on the CPU. arm64: 22 epoll_pwait, 63 read, 64 write.
-# x86-64: 281, 0 and 1 by the syscall table. Only the arm64 numbers were run here.
+# x86-64: 281, 0 and 1. Both run in CI on GitHub Actions.
 set -eu
 . "$(dirname "$0")/../lab/lib.sh"
 

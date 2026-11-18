@@ -18,6 +18,7 @@ lab_up() {
 # (default 1) while it is attached and keeps the output in $OUT. The answer of the
 # last request (with the timings measured by the service itself) is in $RESP.
 run() {
+	: > "$OUT" # empty before the start, so the wait below never sees the last output
 	dc exec -T probe sh -c "echo \$\$ > /tmp/run.pid; exec timeout -s INT 60 $1 2>&1" > "$OUT" &
 	# A probe needs from one to several seconds to start, more on a cold machine.
 	# Its first line ("Attaching 1 probe...") says that it is ready.

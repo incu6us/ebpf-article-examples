@@ -91,9 +91,14 @@ LAB_PORT=18181 ./02-where-the-time-goes/check.sh
 
 ## Tested on
 
-Docker Desktop on a Mac with Apple Silicon: kernel 6.12, arm64. Every check passes there.
+- Docker Desktop on a Mac with Apple Silicon: kernel 6.12, arm64. The output in the articles comes from there.
+- GitHub Actions, Ubuntu 22.04 runners: kernel 6.8, x86-64 and arm64. The workflow in `.github/workflows` runs every check there.
 
-I have not run the lab on an x86-64 machine yet. One thing is known to differ there: the syscall numbers. The check of chapter 2 has the x86-64 numbers from the syscall table, but they were never run.
+## Known issue: kernel 7.0
+
+On the Ubuntu 24.04 runners of GitHub (kernel 7.0) the bpftrace of the lab misses events on the tracepoints of single syscalls, like `sys_enter_openat` in chapter 1. In my runs the program ran only for syscalls on CPU 0. The general tracepoint `raw_syscalls:sys_enter` saw every call on every CPU at the same time. Chapter 2 does not use the tracepoints of single syscalls and passes there.
+
+If chapter 1 shows fewer opens than requests on your machine, check your kernel with `uname -r`.
 
 ## Versions
 

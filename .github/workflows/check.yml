@@ -1,4 +1,6 @@
 # Runs every chapter against the lab on both CPU types.
+# Ubuntu 22.04 runners (kernel 6.8): on the Ubuntu 24.04 runners (kernel 7.0) the
+# syscall tracepoints of chapter 1 miss events. See the README.
 name: check
 on:
   push:
@@ -8,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        runner: [ubuntu-22.04, ubuntu-22.04-arm]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
