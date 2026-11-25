@@ -1,0 +1,6 @@
+// A uprobe that does attach: pg_parse_query is exported, so its name survived the strip.
+// Its first argument is the query text. Postgres calls it when a query is parsed.
+uprobe:/usr/lib/postgresql/18/bin/postgres:pg_parse_query
+{
+	printf("%s\n", str(arg0));
+}

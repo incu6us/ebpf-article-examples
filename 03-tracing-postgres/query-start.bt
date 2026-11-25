@@ -1,0 +1,6 @@
+// Second idea: the USDT probe query__start. It fires for a query typed in psql.
+// It stays silent for the service, because drivers send prepared statements.
+usdt:/usr/lib/postgresql/18/bin/postgres:postgresql:query__start
+{
+	printf("%s\n", str(arg0));
+}

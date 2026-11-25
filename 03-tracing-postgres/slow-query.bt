@@ -1,0 +1,25 @@
+// Which query is slow? Three USDT probes that are built into the Postgres binary.
+// statement__status carries the query text, the other two mark start and end of the execution.
+// Usage: bpftrace slow-query.bt [min ms]   prints the queries that took at least that long
+config = { max_strlen = 96 }
+
+usdt:/usr/lib/postgresql/18/bin/postgres:postgresql:statement__status
+{
+	$q = str(arg0);
+	if ($q != "") { @query[pid] = $q; }
+}
+
+usdt:/usr/lib/postgresql/18/bin/postgres:postgresql:query__execute__start
+{
+	@start[pid] = nsecs;
+}
+
+usdt:/usr/lib/postgresql/18/bin/postgres:postgresql:query__execute__done
+/@start[pid]/
+{
+	$ms = (nsecs - @start[pid]) / 1000000;
+	if ($ms >= $1) { printf("%d ms  %s\n", $ms, @query[pid]); }
+	delete(@start[pid]);
+}
+
+END { clear(@start); clear(@query); }

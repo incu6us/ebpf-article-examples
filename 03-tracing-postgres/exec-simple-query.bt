@@ -1,0 +1,6 @@
+// First idea: a uprobe on the function that runs a simple query.
+// It does not attach. The packaged binary is stripped and this function is not exported.
+uprobe:/usr/lib/postgresql/18/bin/postgres:exec_simple_query
+{
+	printf("%s\n", str(arg0));
+}

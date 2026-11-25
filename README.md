@@ -10,6 +10,7 @@ Everything runs in Docker. You need no Linux machine, no Go and no C compiler on
 |---|---|---|
 | `01-first-look` | Which process writes this file? | bpftrace, a tracepoint |
 | `02-where-the-time-goes` | Where does a slow request wait? | bpftrace, kprobes |
+| `03-tracing-postgres` | Which query is slow? | bpftrace, uprobes and USDT probes |
 
 Each directory has its own README with the commands and the output to expect. The next chapters come here when their articles are out.
 

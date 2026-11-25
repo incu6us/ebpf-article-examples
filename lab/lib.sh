@@ -28,6 +28,7 @@ run() {
 	sleep 1
 	n=${2:-1}
 	while [ "$n" -gt 0 ]; do curl -sf -o "$RESP" "$URL"; n=$((n - 1)); done
+	${RUN_EXTRA:-:} # a chapter can name a function here that does more while the probe is attached
 	# 12 s after it is ready the probe gets Ctrl-C and prints its maps. Only this
 	# probe: the container sees every process of the host.
 	left=$((ready + 12 - $(date +%s)))
